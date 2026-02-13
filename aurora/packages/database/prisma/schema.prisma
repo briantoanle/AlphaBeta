@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String?
+  riskLevel     String      @default("Intermediate")
+  portfolios    Portfolio[]
+  alerts        Alert[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Portfolio {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  name          String
+  holdings      Holding[]
+  riskTolerance Float       @default(5.0)
+  horizon       Int         @default(10)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Holding {
+  id            String      @id @default(cuid())
+  portfolioId   String
+  portfolio     Portfolio   @relation(fields: [portfolioId], references: [id])
+  symbol        String
+  weight        Float
+}
+
+model MacroSignal {
+  id            String      @id @default(cuid())
+  source        String
+  name          String
+  value         Float
+  timestamp     DateTime
+  category      String
+}
+
+model MacroScore {
+  id            String      @id @default(cuid())
+  score         Float
+  regime        String
+  drivers       Json
+  confidence    String
+  timestamp     DateTime    @default(now())
+}
+
+model Recommendation {
+  id            String      @id @default(cuid())
+  userId        String
+  portfolioId   String
+  action        String
+  content       String
+  options       Json
+  timestamp     DateTime    @default(now())
+}
+
+model Alert {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  type          String
+  threshold     Float
+  isActive      Boolean     @default(true)
+}
