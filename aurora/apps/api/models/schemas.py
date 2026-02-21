@@ -7,9 +7,9 @@ class HoldingBase(BaseModel):
 
 class PortfolioBase(BaseModel):
     name: str
-    holdings: List[HoldingBase] = Field(default_factory=list)
-    riskTolerance: float = Field(default=5.0, ge=0.0, allow_inf_nan=False)
-    horizon: int = Field(default=10, ge=1)
+    holdings: List[HoldingBase]
+    riskTolerance: float = Field(5.0, ge=0.0, le=10.0)
+    horizon: int = Field(10, ge=1, le=100)
 
 class MacroScoreResponse(BaseModel):
     score: float

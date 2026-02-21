@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Activity, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { API_BASE_URL } from "@/lib/config";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 export default function DashboardPage() {
@@ -11,9 +12,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:8000/api/macro/score").then(res => res.json()),
-      fetch("http://localhost:8000/api/alerts").then(res => res.json()),
-      fetch("http://localhost:8000/api/data/freshness").then(res => res.json())
+      fetch(`${API_BASE_URL}/api/macro/score`).then(res => res.json()),
+      fetch(`${API_BASE_URL}/api/alerts`).then(res => res.json()),
+      fetch(`${API_BASE_URL}/api/data/freshness`).then(res => res.json())
     ]).then(([macro, alertList, fresh]) => {
       setData(macro);
       setAlerts(alertList);
@@ -25,13 +26,13 @@ export default function DashboardPage() {
   if (loading) return <div className="p-10 text-center">Loading macro data...</div>;
 
   // Mock historical data for the chart
-  const historicalData = [
+  const historicalData = useMemo(() => [
     { name: 'Mon', score: 45 },
     { name: 'Tue', score: 48 },
     { name: 'Wed', score: 42 },
     { name: 'Thu', score: 55 },
-    { name: 'Fri', score: data.score },
-  ];
+    { name: 'Fri', score: data?.score },
+  ], [data?.score]);
 
   return (
     <div className="space-y-8">

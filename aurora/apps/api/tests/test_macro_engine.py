@@ -1,6 +1,20 @@
+import pytest
 import pandas as pd
 import numpy as np
 from services.engines.macro_engine import MacroStressEngine
+
+@pytest.mark.parametrize("score, expected_regime", [
+    (70.1, "Risk-off"),
+    (70.0, "Neutral"),
+    (69.9, "Neutral"),
+    (50.0, "Neutral"),
+    (40.1, "Neutral"),
+    (40.0, "Neutral"),
+    (39.9, "Risk-on"),
+])
+def test_detect_regime_boundaries(score, expected_regime):
+    engine = MacroStressEngine()
+    assert engine.detect_regime(score) == expected_regime
 
 def test_macro_engine():
     engine = MacroStressEngine()
