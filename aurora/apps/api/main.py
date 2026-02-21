@@ -61,11 +61,12 @@ def seed_demo_user(db: Session):
 
 @app.on_event("startup")
 def startup_event():
-    db = next(get_db())
+    db_gen = get_db()
+    db = next(db_gen)
     try:
         seed_demo_user(db)
     finally:
-        db.close()
+        db_gen.close()
 
 @app.get("/api/health")
 def health_check():
