@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Lightbulb, ArrowRight, ShieldCheck, Zap, AlertCircle } from "lucide-react";
+import { API_BASE_URL } from "@/lib/config";
 
 export default function RecommendationsPage() {
   const [recs, setRecs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/recommendations")
+    fetch(`${API_BASE_URL}/api/recommendations`)
       .then(res => res.json())
       .then(data => {
         setRecs(data.recommendations);
