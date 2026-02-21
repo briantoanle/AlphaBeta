@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=aurora
+      - POSTGRES_PASSWORD=aurora_password
+      - POSTGRES_DB=aurora_db
+    ports:
+      - "5432:5432"
+
+  api:
+    build: ./apps/api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://aurora:aurora_password@db:5432/aurora_db
+      - FRED_API_KEY=${FRED_API_KEY}
+    depends_on:
+      - db
+
+  web:
+    build:
+      context: ./apps/web
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
