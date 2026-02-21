@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PieChart, ShieldAlert, TrendingDown } from "lucide-react";
 import PortfolioUpload from "@/components/PortfolioUpload";
 
