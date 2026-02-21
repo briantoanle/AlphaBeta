@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
-from sqlalchemy.orm import Session
+from typing import List
+from sqlalchemy.orm import Session, joinedload
 
 from database import get_db, engine
 from models import db as db_models
@@ -175,7 +176,7 @@ def import_portfolio(portfolio_data: PortfolioBase, db: Session = Depends(get_db
 def get_portfolio_summary(db: Session = Depends(get_db)):
     user = get_demo_user(db)
     # Get latest portfolio
-    portfolio = db.query(db_models.Portfolio).filter(db_models.Portfolio.userId == user.id).order_by(db_models.Portfolio.createdAt.desc()).first()
+    portfolio = db.query(db_models.Portfolio).options(joinedload(db_models.Portfolio.holdings)).filter(db_models.Portfolio.userId == user.id).order_by(db_models.Portfolio.createdAt.desc()).first()
 
     if not portfolio:
         raise HTTPException(status_code=404, detail="Portfolio not found")
