@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { Activity, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { API_BASE_URL } from "@/lib/config";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 export default function DashboardPage() {
@@ -11,9 +12,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("http://localhost:8000/api/macro/score").then(res => res.json()),
-      fetch("http://localhost:8000/api/alerts").then(res => res.json()),
-      fetch("http://localhost:8000/api/data/freshness").then(res => res.json())
+      fetch(`${API_BASE_URL}/api/macro/score`).then(res => res.json()),
+      fetch(`${API_BASE_URL}/api/alerts`).then(res => res.json()),
+      fetch(`${API_BASE_URL}/api/data/freshness`).then(res => res.json())
     ]).then(([macro, alertList, fresh]) => {
       setData(macro);
       setAlerts(alertList);

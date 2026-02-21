@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PieChart, ShieldAlert, TrendingDown } from "lucide-react";
 import PortfolioUpload from "@/components/PortfolioUpload";
+import { API_BASE_URL } from "@/lib/config";
 
 export default function PortfolioPage() {
   const [summary, setSummary] = useState<any>(null);
@@ -9,7 +10,7 @@ export default function PortfolioPage() {
 
   const fetchSummary = () => {
     setLoading(true);
-    fetch("http://localhost:8000/api/portfolio/summary")
+    fetch(`${API_BASE_URL}/api/portfolio/summary`)
       .then(res => res.json())
       .then(data => {
         setSummary(data);

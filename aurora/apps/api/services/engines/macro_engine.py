@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from typing import Dict, List, Tuple
 
 class MacroStressEngine:
@@ -71,12 +70,19 @@ class MacroStressEngine:
         return res
 
     def detect_regime(self, score: float) -> str:
+        """
+        Categorizes the stress score into Risk-off, Risk-on, or Neutral regimes.
+
+        Thresholds:
+        - > 70: Risk-off (High Stress)
+        - < 40: Risk-on (Low Stress)
+        - 40-70: Neutral
+        """
         if score > 70:
             return "Risk-off"
         elif score < 40:
             return "Risk-on"
-        else:
-            return "Neutral"
+        return "Neutral"
 
     def get_attribution(self, normalized_row: pd.Series, signal_categories: Dict[str, str]) -> List[Dict]:
         """Returns top drivers of the stress score for a given point in time."""

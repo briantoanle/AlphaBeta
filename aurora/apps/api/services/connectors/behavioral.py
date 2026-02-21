@@ -1,7 +1,5 @@
 from pytrends.request import TrendReq
 import pandas as pd
-import time
-import random
 from .base import DataConnector
 
 class BehavioralConnector(DataConnector):
