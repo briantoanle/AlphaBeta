@@ -3,7 +3,7 @@ from typing import List, Dict, Optional
 
 class HoldingBase(BaseModel):
     symbol: str
-    weight: float
+    weight: float = Field(..., ge=0.0, le=1.0, allow_inf_nan=False)
 
 class PortfolioBase(BaseModel):
     name: str
