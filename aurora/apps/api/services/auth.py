@@ -7,7 +7,9 @@ from database import get_db
 from models import db as db_models
 
 # In a real application, these would be in a .env file
-SECRET_KEY = os.getenv("AURORA_SECRET_KEY", "your-secret-key-for-demo-purposes")
+SECRET_KEY = os.getenv("AURORA_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("AURORA_SECRET_KEY environment variable must be set")
 ALGORITHM = "HS256"
 
 security = HTTPBearer()
