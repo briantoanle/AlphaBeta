@@ -62,7 +62,33 @@ The easiest way to run the full stack (Frontend, Backend, and Database) is using
    - `FRED_API_KEY`: Your FRED API key.
 4. The backend will automatically create tables on startup.
 
-### Database (Supabase / Neon)
+### Google Cloud Platform (Full Stack Streamlined)
+
+Google Cloud can host the entire stack. To streamline it, use **Firebase Hosting** for the frontend and **Cloud Run** for the backend.
+
+#### 1. Database: Google Cloud SQL (PostgreSQL)
+- Create a **Cloud SQL for PostgreSQL** instance.
+- Create a database named `aurora_db`.
+- **Note:** Cloud SQL is not free. For a free hackathon alternative, use **Neon.tech** or **Supabase**.
+
+#### 2. Backend: Cloud Run
+- Enable the Cloud Run and Cloud Build APIs.
+- Deploy the backend:
+  ```bash
+  cd aurora/apps/api
+  gcloud builds submit --tag gcr.io/[PROJECT_ID]/aurora-api
+  gcloud run deploy aurora-api --image gcr.io/[PROJECT_ID]/aurora-api --platform managed --allow-unauthenticated --set-env-vars "DATABASE_URL=[DB_URL],FRED_API_KEY=[KEY]"
+  ```
+
+#### 3. Frontend: Firebase Hosting (Recommended for Next.js)
+- Install Firebase CLI: `npm install -g firebase-tools`.
+- Run `firebase init` in `aurora/apps/web` and choose **Hosting**.
+- Choose "Set up as a single-page app" and "Set up automatic builds and deploys with GitHub".
+- **Streamlining Tip:** Firebase can automatically proxy requests to your Cloud Run backend using a `rewrites` rule in `firebase.json`.
+
+---
+
+### Database (Supabase / Neon / Cloud SQL)
 1. Create a free PostgreSQL instance on [Supabase](https://supabase.com) or [Neon](https://neon.tech).
 2. Copy the connection string and use it as `DATABASE_URL` for the backend.
 

@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session, joinedload
 from database import get_db, engine
 from models import db as db_models
 from models.schemas import PortfolioBase, HoldingBase, MacroScoreResponse
-from services.auth import get_current_user
 from services.connectors.fred import FredConnector
 from services.connectors.market import MarketConnector
 from services.connectors.behavioral import BehavioralConnector
@@ -38,34 +37,25 @@ market = MarketConnector()
 behavioral = BehavioralConnector()
 
 # Seed a demo user if not exists
-def seed_demo_user(db: Session):
+def get_demo_user(db: Session):
     user = db.query(db_models.User).filter(db_models.User.email == "demo@aurora.ai").first()
     if not user:
-        user = db_models.User(id="demo-user-id", email="demo@aurora.ai", name="Demo User", riskLevel="Intermediate")
+        user = db_models.User(email="demo@aurora.ai", name="Demo User", riskLevel="Intermediate")
         db.add(user)
         db.commit()
         db.refresh(user)
         # Add a default portfolio
-        portfolio = db_models.Portfolio(id="demo-portfolio-id", userId=user.id, name="Demo Portfolio", riskTolerance=5.0)
+        portfolio = db_models.Portfolio(userId=user.id, name="Demo Portfolio", riskTolerance=5.0)
         db.add(portfolio)
         db.commit()
         db.refresh(portfolio)
         # Add holdings
-        h1 = db_models.Holding(id="h1", portfolioId=portfolio.id, symbol="SPY", weight=0.6)
-        h2 = db_models.Holding(id="h2", portfolioId=portfolio.id, symbol="TLT", weight=0.3)
-        h3 = db_models.Holding(id="h3", portfolioId=portfolio.id, symbol="GLD", weight=0.1)
+        h1 = db_models.Holding(portfolioId=portfolio.id, symbol="SPY", weight=0.6)
+        h2 = db_models.Holding(portfolioId=portfolio.id, symbol="TLT", weight=0.3)
+        h3 = db_models.Holding(portfolioId=portfolio.id, symbol="GLD", weight=0.1)
         db.add_all([h1, h2, h3])
         db.commit()
     return user
-
-@app.on_event("startup")
-def startup_event():
-    db_gen = get_db()
-    db = next(db_gen)
-    try:
-        seed_demo_user(db)
-    finally:
-        db_gen.close()
 
 @app.get("/api/health")
 def health_check():
@@ -81,9 +71,9 @@ def get_freshness(db: Session = Depends(get_db)):
     }
 
 @app.get("/api/alerts")
-def get_alerts(db: Session = Depends(get_db), user: db_models.User = Depends(get_current_user)):
+def get_alerts(db: Session = Depends(get_db)):
     macro = get_macro_score(db)
-    summary = get_portfolio_summary_internal(db, user)
+    summary = get_portfolio_summary(db)
 
     alerts = []
     if macro["score"] > 60:
@@ -157,7 +147,8 @@ def get_macro_score(db: Session = Depends(get_db)):
     }
 
 @app.post("/api/portfolio/import")
-def import_portfolio(portfolio_data: PortfolioBase, db: Session = Depends(get_db), user: db_models.User = Depends(get_current_user)):
+def import_portfolio(portfolio_data: PortfolioBase, db: Session = Depends(get_db)):
+    user = get_demo_user(db)
 
     # Create new portfolio for user
     new_portfolio = db_models.Portfolio(
@@ -181,7 +172,9 @@ def import_portfolio(portfolio_data: PortfolioBase, db: Session = Depends(get_db
     db.commit()
     return {"status": "success", "portfolioId": new_portfolio.id}
 
-def get_portfolio_summary_internal(db: Session, user: db_models.User):
+@app.get("/api/portfolio/summary")
+def get_portfolio_summary(db: Session = Depends(get_db)):
+    user = get_demo_user(db)
     # Get latest portfolio
     portfolio = db.query(db_models.Portfolio).options(joinedload(db_models.Portfolio.holdings)).filter(db_models.Portfolio.userId == user.id).order_by(db_models.Portfolio.createdAt.desc()).first()
 
@@ -210,14 +203,13 @@ def get_portfolio_summary_internal(db: Session, user: db_models.User):
         "monte_carlo": mc
     }
 
-@app.get("/api/portfolio/summary")
-def get_portfolio_summary(db: Session = Depends(get_db), user: db_models.User = Depends(get_current_user)):
-    return get_portfolio_summary_internal(db, user)
-
 @app.get("/api/recommendations")
-def get_recommendations(db: Session = Depends(get_db), user: db_models.User = Depends(get_current_user)):
+def get_recommendations(db: Session = Depends(get_db)):
     macro = get_macro_score(db)
-    summary = get_portfolio_summary_internal(db, user)
+    summary = get_portfolio_summary(db)
+
+    # Get user risk tolerance from DB
+    user = get_demo_user(db)
 
     recs = rec_engine.generate_recommendations(
         macro_score=macro["score"],
