@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
 import datetime
 from typing import List
 from sqlalchemy.orm import Session, joinedload
